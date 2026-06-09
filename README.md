@@ -1,124 +1,124 @@
 # 🐚 MiniShell
 
-Una shell minimalista implementada en C que replica las funcionalidades básicas de un intérprete de comandos UNIX. Desarrollada como proyecto de sistemas operativos.
+A minimalist shell implemented in C that replicates the core functionality of a UNIX command interpreter. Developed as an operating systems course project.
 
 ---
 
-## Características
+## Features
 
-- **Prompt personalizado** con formato `usuario@host:directorio$`
-- **Ejecución de comandos externos** mediante `execvp` con búsqueda en `PATH`
-- **Pipelines** de N comandos encadenados con `|`
-- **Redirección de E/S**: entrada (`<`), salida (`>`) y error estándar (`2>`)
-- **Procesos en segundo plano** con `&`
-- **Gestión de jobs**: listar, traer a foreground
-- **Comandos internos**: `cd`, `exit`, `jobs`, `fg`
-- **Manejo de señales**: ignora `SIGINT` y `SIGQUIT` en la shell principal; los hijos las restauran
+- **Custom prompt** in `user@host:directory$` format
+- **External command execution** via `execvp` with `PATH` lookup
+- **Pipelines** chaining N commands with `|`
+- **I/O redirection**: stdin (`<`), stdout (`>`), and stderr (`2>`)
+- **Background processes** with `&`
+- **Job management**: list and bring jobs to foreground
+- **Built-in commands**: `cd`, `exit`, `jobs`, `fg`
+- **Signal handling**: ignores `SIGINT` and `SIGQUIT` in the main shell; child processes restore them
 
 ---
 
-## Comandos internos
+## Built-in Commands
 
-| Comando | Descripción |
+| Command | Description |
 |---------|-------------|
-| `cd [ruta]` | Cambia el directorio de trabajo. Sin argumentos va a `$HOME` |
-| `exit` | Termina la minishell |
-| `jobs` | Lista los procesos en segundo plano activos |
-| `fg [N]` | Trae el job N a foreground (sin número, trae el último) |
+| `cd [path]` | Changes the working directory. Without arguments, goes to `$HOME` |
+| `exit` | Terminates the shell |
+| `jobs` | Lists active background processes |
+| `fg [N]` | Brings job N to the foreground (without a number, brings the last one) |
 
 ---
 
-## Compilación
+## Build
 
-El proyecto depende de `parser.h` y su implementación asociada. Compila con:
+The project depends on `parser.h` and its associated implementation. Compile with:
 
 ```bash
 gcc -o minishell MiniShell.c parser.c
 ```
 
-> Asegúrate de tener `parser.h` y `parser.c` en el mismo directorio.
+> Make sure `parser.h` and `parser.c` are in the same directory.
 
 ---
 
-## Uso
+## Usage
 
 ```bash
 ./minishell
 ```
 
-### Ejemplos
+### Examples
 
 ```bash
-# Comando simple
-usuario@host:~$ ls -la
+# Simple command
+user@host:~$ ls -la
 
-# Redirección de entrada y salida
-usuario@host:~$ sort < lista.txt > lista_ordenada.txt
+# Input and output redirection
+user@host:~$ sort < list.txt > sorted_list.txt
 
-# Pipeline de dos comandos
-usuario@host:~$ cat archivo.txt | grep "error"
+# Two-command pipeline
+user@host:~$ cat file.txt | grep "error"
 
-# Pipeline encadenado
-usuario@host:~$ ps aux | grep python | wc -l
+# Chained pipeline
+user@host:~$ ps aux | grep python | wc -l
 
-# Proceso en background
-usuario@host:~$ sleep 10 &
+# Background process
+user@host:~$ sleep 10 &
 [1] 1234
 
-# Ver jobs activos
-usuario@host:~$ jobs
+# List active jobs
+user@host:~$ jobs
 [1] 1234 Running sleep 10
 
-# Traer job a foreground
-usuario@host:~$ fg 1
+# Bring job to foreground
+user@host:~$ fg 1
 
-# Cambiar de directorio
-usuario@host:~$ cd /tmp
+# Change directory
+user@host:~$ cd /tmp
 /tmp
 ```
 
 ---
 
-## Arquitectura
+## Architecture
 
 ```
 MiniShell.c
-├── main()                         # Bucle principal: prompt → lectura → ejecución
+├── main()                         # Main loop: prompt → read → execute
 ├── Prompt
-│   ├── getNombre()                # Usuario actual (getpwuid)
-│   ├── getHostname()              # Nombre del host
-│   └── get_cwd()                  # Directorio de trabajo actual
-├── Gestión de jobs
-│   ├── add_job()                  # Añade un proceso a la tabla de jobs
-│   ├── remove_job_index()         # Elimina un job por índice
-│   ├── find_job_by_pid()          # Busca un job por PID
-│   └── limpiar_jobs_terminados()  # Recoge procesos zombie (WNOHANG)
-├── Comandos internos
-│   ├── comando_cd()               # Implementación de cd
-│   ├── fg_job()                   # Implementación de fg
-│   └── parse_fg_arg()             # Parser del argumento de fg
-├── Ejecución
-│   ├── ejecutar_caso_simple()     # Un solo comando con posible background
-│   ├── ejecutar_pipeline()        # Pipeline general de N comandos
-│   └── procesar_linea()           # Dispatch: parsea y elige rama de ejecución
-└── Redirección
-    ├── redir_in()                 # Redirección de stdin
-    ├── redir_out()                # Redirección de stdout
-    └── redir_err()                # Redirección de stderr
+│   ├── getNombre()                # Current user (getpwuid)
+│   ├── getHostname()              # Machine hostname
+│   └── get_cwd()                  # Current working directory
+├── Job management
+│   ├── add_job()                  # Adds a process to the job table
+│   ├── remove_job_index()         # Removes a job by index
+│   ├── find_job_by_pid()          # Looks up a job by PID
+│   └── limpiar_jobs_terminados()  # Reaps zombie processes (WNOHANG)
+├── Built-in commands
+│   ├── comando_cd()               # cd implementation
+│   ├── fg_job()                   # fg implementation
+│   └── parse_fg_arg()             # Parses fg argument
+├── Execution
+│   ├── ejecutar_caso_simple()     # Single command with optional background
+│   ├── ejecutar_pipeline()        # General N-command pipeline
+│   └── procesar_linea()           # Dispatch: parses and picks execution branch
+└── Redirection
+    ├── redir_in()                 # stdin redirection
+    ├── redir_out()                # stdout redirection
+    └── redir_err()                # stderr redirection
 ```
 
 ---
 
-## Dependencias
+## Dependencies
 
-- `parser.h` / `parser.c` — tokenizador de líneas de comandos (proporcionado por la práctica)
-- Bibliotecas estándar POSIX: `unistd.h`, `sys/wait.h`, `fcntl.h`, `signal.h`, `pwd.h`
+- `parser.h` / `parser.c` — command-line tokenizer (provided as part of the assignment)
+- Standard POSIX libraries: `unistd.h`, `sys/wait.h`, `fcntl.h`, `signal.h`, `pwd.h`
 
 ---
 
-## Limitaciones conocidas
+## Known Limitations
 
-- Los jobs en background en un pipeline solo registran el PID del último proceso.
-- No hay soporte para redirección con `>>` (append) ni heredoc (`<<`).
-- No implementa control de trabajos completo (no hay `bg`, ni señal `SIGTSTP`).
-- El número máximo de jobs simultáneos es `128` (`MAX_JOBS`).
+- Background pipeline jobs only register the PID of the last process in the chain.
+- No support for append redirection (`>>`) or heredoc (`<<`).
+- No full job control: `bg` command and `SIGTSTP` signal are not implemented.
+- Maximum number of simultaneous jobs is `128` (`MAX_JOBS`).
